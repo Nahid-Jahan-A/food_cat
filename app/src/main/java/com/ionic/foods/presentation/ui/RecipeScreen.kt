@@ -21,36 +21,49 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.ionic.foods.domain.model.Category
 import com.ionic.foods.presentation.viewmodel.RecipeViewmodel
 
 @Composable
-fun RecipeScreen(modifier: Modifier = Modifier, viewmodel: RecipeViewmodel) {
-
+fun RecipeScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToDetails: (String) -> Unit,
+    viewmodel: RecipeViewmodel = hiltViewModel()
+) {
     val viewState by viewmodel.categoryState.collectAsState()
-
-    LaunchedEffect(key1 = Unit) {
-        viewmodel.categoryState
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             viewState.loading -> {
-                CircularProgressIndicator(modifier.align(Alignment.Center))
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
 
             viewState.error != null -> {
-                Text(text = "Error Occurred")
+                Text(
+                    text = "Error Occurred: ${viewState.error}",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
 
-            else -> {
+            viewState.success.isNotEmpty() -> {
                 CategoryScreen(categories = viewState.success)
             }
 
+            else -> {
+                Text(
+                    text = "No Categories Available",
+                    color = Color.Black,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
     }
 }
+
+
 
 @Composable
 fun CategoryScreen(categories: List<Category>) {
@@ -85,25 +98,3 @@ fun CategoryItem(category: Category) {
         )
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

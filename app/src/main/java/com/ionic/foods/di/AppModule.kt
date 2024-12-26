@@ -1,9 +1,11 @@
 package com.ionic.foods.di
 
 import com.ionic.foods.data.api.CategoryService
+import com.ionic.foods.data.api.UserService
 import com.ionic.foods.data.repository.CategoryRepositoryImpl
+import com.ionic.foods.data.repository.UserRepositoryImpl
 import com.ionic.foods.domain.repository.CategoryRepository
-import com.ionic.foods.domain.usecase.GetCategoryUseCase
+import com.ionic.foods.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -16,10 +18,20 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Provides
+    @Singleton
+    @UserBaseUrl
+    fun provideUserRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://dummyjson.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
 
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit {
+    @CategoryBaseUrl
+    fun providesCategoryBaseUrl() : Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://www.themealdb.com/api/json/v1/1/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -28,22 +40,24 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCategoryService(retrofit: Retrofit) : CategoryService {
-        return retrofit.create(CategoryService::class.java)
+    fun provideUserService(@UserBaseUrl retrofit: Retrofit) : UserService {
+        return retrofit.create(UserService::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideGetCategoryUseCase(categoryRepository: CategoryRepository) : GetCategoryUseCase {
-        return GetCategoryUseCase(categoryRepository)
+    fun provideCategoryService(@CategoryBaseUrl retrofit: Retrofit) : CategoryService {
+        return retrofit.create(CategoryService::class.java)
     }
-
 }
-
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+    @Binds
+    abstract fun buildUserRepository(
+        userRepositoryImpl: UserRepositoryImpl
+    ) : UserRepository
 
     @Binds
     abstract fun buildCategoryRepository(
